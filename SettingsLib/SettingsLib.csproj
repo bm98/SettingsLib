@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <AssemblyVersion>1.0.0.6</AssemblyVersion>
+    <FileVersion>1.0.0.6</FileVersion>
+    <Copyright>2022 M.Burri</Copyright>
+    <Description>Simple JSON based Settings Library</Description>
+    <Authors>M.Burri</Authors>
+    <Company>at home</Company>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DocumentationFile>G:\AA_DEVELOP\GitHub\bm98\FSim\SettingsLib\SettingsLib\SettingsLib.xml</DocumentationFile>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <DocumentationFile>G:\AA_DEVELOP\GitHub\bm98\FSim\SettingsLib\SettingsLib\SettingsLib.xml</DocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.Runtime.Serialization.Json" Version="4.3.0" />
+  </ItemGroup>
+
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="if $(ConfigurationName) == Release copy $(TargetDir)*.* $(SolutionDir)..\Redist\&#xD;&#xA;if $(ConfigurationName) == Release del $(SolutionDir)..\Redist\*.tmp" />
+  </Target>
+
+</Project>

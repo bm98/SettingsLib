@@ -1,0 +1,222 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>SettingsLib</name>
+    </assembly>
+    <members>
+        <member name="T:SettingsLib.AppSettings">
+            <summary>
+            Type of the Appsettings 
+            </summary>
+        </member>
+        <member name="T:SettingsLib.AppSettingsBaseV2">
+            <summary>
+            Simple AppSettings Base Class (appended V2 to avoid clash with the .Net one)
+             stores Objects with string keys
+             similar to the AppSettings by .Net but uses Json and used defined locations
+            </summary>
+        </member>
+        <member name="P:SettingsLib.AppSettingsBaseV2.Valid">
+            <summary>
+            Returns the status of the AppSettings 
+            </summary>
+        </member>
+        <member name="M:SettingsLib.AppSettingsBaseV2.#ctor">
+            <summary>
+            cTor: empty  cannot proceed
+            </summary>
+        </member>
+        <member name="M:SettingsLib.AppSettingsBaseV2.#ctor(System.String,System.String)">
+            <summary>
+            cTor: 
+            </summary>
+            <param name="settingsFile">The Settings file+path</param>
+            <param name="instance">An Instance Name (default is empty name)</param>
+        </member>
+        <member name="M:SettingsLib.AppSettingsBaseV2.InitSettings(System.String,System.String)">
+            <summary>
+            Initialize the Setting with a file
+            </summary>
+            <param name="settingsFile">Settings file (fully qualified path)</param>
+            <param name="instance">An Instance Name</param>
+            <returns>True if successfull</returns>
+        </member>
+        <member name="P:SettingsLib.AppSettingsBaseV2.Item(System.String,System.String)">
+            <summary>
+            Get;Set: The indexed item as object
+            
+            Exceptions:
+             InvalidOperationException: if the Provider is in invalid state (filename or permission problem)
+             ArgumentException: if the Setting cannot be evaluated
+             CustomAttributeFormatException: if the DefaultValue Attribute is missing
+             ArgumentException: if the Setting Type has no conversion and cannot be serialized
+             
+            </summary>
+            <param name="sKey">Settings Key - ignored we use the calling Member but need an argument for the Indexer</param>
+            <param name="memberName">Auto Generated: calling member</param>
+            <returns>The object or null</returns>
+        </member>
+        <member name="M:SettingsLib.AppSettingsBaseV2.ReLoad">
+            <summary>
+            Reload the Settings from the Disk
+            Note: this will cancel all changes done after the last Save
+            </summary>
+        </member>
+        <member name="M:SettingsLib.AppSettingsBaseV2.Save">
+            <summary>
+            Save Settings to Disk
+            </summary>
+        </member>
+        <member name="T:SettingsLib.AppSettingsCat">
+            <summary>
+            The Settings catalog 
+             Consist of:
+               a Version integer (internal SettingLib layout version)
+               A Dictionary of Setting Instances
+                 Key:   InstanceName Hash (prevent non JSON compatible keys)
+                 Value: Instance Settings object
+               
+            </summary>
+        </member>
+        <member name="P:SettingsLib.AppSettingsCat.LayoutVersion">
+            <summary>
+            Json Version
+            </summary>
+        </member>
+        <member name="P:SettingsLib.AppSettingsCat.Instances">
+            <summary>
+            Settings Instances collection
+            Key= InstanceHash
+            Value = AppSettingsInstance
+            </summary>
+        </member>
+        <member name="F:SettingsLib.AppSettingsCat.LAYOUT_VERSION">
+            <summary>
+            The current Json Layout version 
+            </summary>
+        </member>
+        <member name="M:SettingsLib.AppSettingsCat.VersionUp(SettingsLib.AppSettingsCat)">
+            <summary>
+            Version Update Hook
+            </summary>
+            <param name="cat"></param>
+        </member>
+        <member name="M:SettingsLib.AppSettingsCat.GET(SettingsLib.LiveSettings,System.String)">
+            <summary>
+            Load the settings from the Instance Catalog into the provided settings obj
+            Can be empty if there is no Instance saved or the saved one is still empty
+            </summary>
+            <param name="_liveSettings">The settings in use</param>
+            <param name="instance">The instance name</param>
+            <returns>True when successful</returns>
+        </member>
+        <member name="M:SettingsLib.AppSettingsCat.PUT(SettingsLib.LiveSettings,System.String)">
+            <summary>
+            Fill the Instance Catalog from the live settings
+            </summary>
+            <param name="_liveSettings">The settings in use</param>
+            <param name="instance">The instance name</param>
+            <returns>True when successful</returns>
+        </member>
+        <member name="T:SettingsLib.AppSettingsInstance">
+            <summary>
+            The Settings Instance
+            </summary>
+        </member>
+        <member name="P:SettingsLib.AppSettingsInstance.InstanceName">
+            <summary>
+            The Instance name as given by the caller of the Library
+            </summary>
+        </member>
+        <member name="P:SettingsLib.AppSettingsInstance.Catalog">
+            <summary>
+            Settings Catalog for this instance
+            </summary>
+        </member>
+        <member name="M:SettingsLib.AppSettingsInstance.InstanceHash(System.String)">
+            <summary>
+            Hash function to reduce the Instance name to a unsigned long
+            </summary>
+            <param name="instance">The instance string</param>
+            <returns></returns>
+        </member>
+        <member name="M:SettingsLib.AppSettingsInstance.GET(System.Collections.Concurrent.ConcurrentDictionary{System.String,System.String})">
+            <summary>
+            Get the settings from the Instance Catalog
+            </summary>
+            <param name="_liveSettings"></param>
+        </member>
+        <member name="M:SettingsLib.AppSettingsInstance.PUT(System.Collections.Concurrent.ConcurrentDictionary{System.String,System.String})">
+            <summary>
+            Fill the Instance Catalog from the live settings
+            </summary>
+            <param name="_liveSettings"></param>
+        </member>
+        <member name="T:SettingsLib.DefaultSettingValueAttribute">
+            <summary>
+            Specifies the default value for an application settings property.
+             Kindly provided by .Net...
+            </summary>
+        </member>
+        <member name="M:SettingsLib.DefaultSettingValueAttribute.#ctor(System.String)">
+            <summary>
+            Initializes an instance of the System.Configuration.DefaultSettingValueAttribute class.
+            </summary>
+            <param name="value">A System.String that represents the default value for the property.</param>
+        </member>
+        <member name="P:SettingsLib.DefaultSettingValueAttribute.Value">
+            <summary>
+            Gets the default value for the application settings property.
+            </summary>
+        </member>
+        <member name="M:SettingsLib.Formatter.FromJsonStream``1(System.IO.Stream)">
+            <summary>
+            Reads from the open stream one entry
+            </summary>
+            <param name="jStream">An open stream at position</param>
+            <returns>A Controller obj or null for errors</returns>
+        </member>
+        <member name="M:SettingsLib.Formatter.FromJsonFile``1(System.String)">
+            <summary>
+            Reads from a file one entry
+            Tries to aquire a shared Read Access and blocks for max 100ms while doing so
+            </summary>
+            <param name="jFilename">The Json Filename</param>
+            <returns>A Controller obj or null for errors</returns>
+        </member>
+        <member name="M:SettingsLib.Formatter.ToJsonStream``1(``0,System.IO.Stream)">
+            <summary>
+            Write to the open stream one entry
+            </summary>
+            <param name="data">A datafile object to write</param>
+            <param name="jStream">An open stream at position</param>
+            <returns>True if successfull</returns>
+        </member>
+        <member name="M:SettingsLib.Formatter.ToJsonFile``1(``0,System.String)">
+            <summary>
+            Write to a file one entry
+            Tries to aquire an exclusive Write Access and blocks for max 100ms while doing so
+            </summary>
+            <param name="data">A datafile object to write</param>
+            <param name="jFilename">The Json Filename</param>
+            <returns>True if successfull</returns>
+        </member>
+        <member name="M:SettingsLib.Formatter.UpdateJsonFile``1(System.String,System.Func{``0,``0})">
+            <summary>
+            Locked Update of a Json File
+            It uses the Update Function to send the most current data to the caller and expects updated data in return
+            Tries to aquire an exclusive Write Access and blocks for max 100ms while doing so
+            
+            </summary>
+            <param name="jFilename">The Json Filename</param>
+            <param name="updateFunction">A function to update the argument an return the new data to save</param>
+            <returns></returns>
+        </member>
+        <member name="T:SettingsLib.LiveSettings">
+            <summary>
+            Type of the Live Settings
+              concurrent Dict to allow threaded Apps to use SettingLib
+            </summary>
+        </member>
+    </members>
+</doc>
