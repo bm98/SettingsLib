@@ -140,6 +140,7 @@ namespace SettingsLib
             ts.SetLength( 0 );
             retVal = ToJsonStream( data, ts );
           }
+          return retVal; //20221109-Fix - return if no Exception was raised
         }
         catch (IOException ioex) {
           // retry after a short wait

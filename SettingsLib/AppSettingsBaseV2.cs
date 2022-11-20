@@ -3,8 +3,8 @@ using System.Collections.Concurrent;
 using System.Linq;
 using System.IO;
 using System.Reflection;
-using System.Configuration;
 using System.ComponentModel;
+using System.Text.RegularExpressions;
 
 namespace SettingsLib
 {
@@ -16,7 +16,10 @@ namespace SettingsLib
   [DefaultProperty( "Item" )]
   public abstract class AppSettingsBaseV2
   {
-    // a concurrent Dict, should allow for threaded apps
+    // how many backups to maintain
+    private const int c_MaxBackupGeneration = 5;
+
+    // instance settings, a concurrent Dict, should allow for threaded apps
     private LiveSettings _liveSettings = new LiveSettings( );
 
     // filename + path 
@@ -25,11 +28,12 @@ namespace SettingsLib
     // the active instance within the settings file
     private string _instance = "";
 
-    // the settings
+    // all settings in the file
     private AppSettingsCat _settings = null;
 
     // true if the file path etc is valid and usable
     private bool _valid = false;
+
     /// <summary>
     /// Returns the status of the AppSettings 
     /// </summary>
@@ -48,20 +52,60 @@ namespace SettingsLib
     /// </summary>
     /// <param name="settingsFile">The Settings file+path</param>
     /// <param name="instance">An Instance Name (default is empty name)</param>
-    public AppSettingsBaseV2( string settingsFile, string instance = "" )
+    /// <param name="maintainBackups">Backup Flag</param>
+    public AppSettingsBaseV2( string settingsFile, string instance = "", bool maintainBackups = true )
     {
       _settingsFile = Path.GetFullPath( settingsFile );
       _instance = instance;
-      _valid = InitSettings( _settingsFile, _instance );
+      _valid = InitSettings( _settingsFile, _instance, maintainBackups );
+    }
+
+    // move the backups one generation up
+    private void MoveBackup( string settingsFile )
+    {
+      var sPath = Path.GetFullPath( settingsFile );
+      var sName = Path.GetFileName( settingsFile );
+      // move 4->5, 3->4,.. 1->2
+      for (int gen = c_MaxBackupGeneration - 1; gen > 0; gen--) {
+        var bN = settingsFile + $".{gen}";
+        var bN1 = settingsFile + $".{gen + 1}";
+        // never fail
+        try {
+          var bNtime = File.GetLastWriteTime( bN );
+          if (File.Exists( bN )) File.Copy( bN, bN1, true ); // move one up
+          File.SetLastWriteTime( bN1, bNtime ); // maintain the original write time
+        }
+        catch { }
+      }
+    }
+    
+    // BackupName: Setting.ext -> Setting.ext.1 .. 5
+    // newest is always Setting.ext.1
+    // max number of backup generations is maintained
+    private void BackupSettingsFile( string settingsFile )
+    {
+      if (File.Exists( settingsFile )) {
+        MoveBackup( settingsFile ); // move the old ones up
+        var bN1 = settingsFile + ".1"; // the newest is 1, 
+        // never fail
+        try {
+          var bNtime = File.GetLastWriteTime( settingsFile );
+          File.Copy( settingsFile, bN1, true );
+          File.SetLastWriteTime( bN1, bNtime ); // maintain the original write time
+        }
+        catch { }
+      }
     }
 
     /// <summary>
     /// Initialize the Setting with a file
+    /// Backup the current one if it exists
     /// </summary>
     /// <param name="settingsFile">Settings file (fully qualified path)</param>
     /// <param name="instance">An Instance Name</param>
+    /// <param name="maintainBackups">Backup Flag</param>
     /// <returns>True if successfull</returns>
-    private bool InitSettings( string settingsFile, string instance )
+    private bool InitSettings( string settingsFile, string instance, bool maintainBackups )
     {
       bool retValid = false;
       _settings = new AppSettingsCat( );
@@ -69,7 +113,12 @@ namespace SettingsLib
       if (File.Exists( settingsFile )) {
         // there is one, try if it works
         retValid = DiskLoad_low( instance, true ); // Load to live
-        if (!retValid) {
+        if (retValid) {
+          if (maintainBackups) {
+            BackupSettingsFile( settingsFile );
+          }
+        }
+        else {
           // failed due to not beeing a valid Settings file - delete it
           try {
             File.Delete( settingsFile );
@@ -94,13 +143,16 @@ namespace SettingsLib
       return retValid;
     }
 
+    // the update function called from the Json formatter
+    // we get the current settings from the file and must apply and return the updated settings
+    // note we may get settings which don't belong to our current instance (don't mess with them..)
     private AppSettingsCat UpdateFunction( AppSettingsCat oldData )
     {
       if (oldData != null) {
-        // newly read settings
+        // set the current one from what was just read
         _settings = oldData;
       }
-      // update and return
+      // update with our live settings and return for writing
       _settings.PUT( _liveSettings, _instance );
       return _settings;
     }
@@ -139,23 +191,15 @@ namespace SettingsLib
       return false;
     }
 
-    /*
-    public static T IntToEnum<T>( int value, T defaultValue )
-    {
-      T enumValue = (Enum.IsDefined( typeof( T ), value )) ? (T)(object)value : defaultValue;
-      return enumValue;
-    }
-    */
-
-    // try to find the property info in the given assembly
+    // try to find the property info for THIS type in the given assembly
     private PropertyInfo GetPInfo( string propName, Assembly caller )
     {
+      var tn = this.GetType( ).Name;
       // try to find the calling Property in the calling Type(class) 
       PropertyInfo pInfo = null;
-      foreach (var defTypes in caller.DefinedTypes) {
-        pInfo = defTypes.GetProperty( propName );
-        if (pInfo != null) break; // shortcut
-      }
+      //20221109 - the calling Type must be checked else it may find other Properties with the matching name
+      var defType = caller.DefinedTypes.FirstOrDefault( x => x == this.GetType( ) );
+      pInfo = defType?.GetProperty( propName );
       return pInfo;
     }
 
@@ -240,7 +284,7 @@ namespace SettingsLib
     /// Reload the Settings from the Disk
     /// Note: this will cancel all changes done after the last Save
     /// </summary>
-    public void ReLoad( )
+    public void Reload( )
     {
       if (!_valid) return;
 
@@ -257,9 +301,5 @@ namespace SettingsLib
       DiskUpdate_low( _instance );
     }
 
-
-
-
   }
-
 }
