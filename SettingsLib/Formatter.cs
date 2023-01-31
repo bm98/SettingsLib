@@ -50,6 +50,7 @@ namespace SettingsLib
           using (var ts = File.Open( jFilename, FileMode.Open, FileAccess.Read, FileShare.Read )) {
             retVal = FromJsonStream<T>( ts );
           }
+          return retVal; //20221109-Fix - return if no Exception was raised
         }
         catch (IOException ioex) {
           // retry after a short wait
@@ -100,6 +101,7 @@ namespace SettingsLib
           using (var ts = File.Open( jFilename, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None )) {
             retVal = ToJsonStream( data, ts );
           }
+          return retVal; //20221109-Fix - return if no Exception was raised
         }
         catch (IOException ioex) {
           // retry after a short wait
