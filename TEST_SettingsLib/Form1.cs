@@ -24,7 +24,7 @@ namespace TEST_SettingsLib
     {
       AppSettings.InitInstance( settingsFile );
 
-      AppSettings.Instance.ReLoad( );
+      //AppSettings.Instance.ReLoad( );
       RTB.Text = AppSettings.Instance.FormLocation.ToString( ) + "\n";
       RTB.Text += AppSettings.Instance.IntSetting.ToString( ) + "\n";
       RTB.Text += AppSettings.Instance.FloatSetting.ToString( ) + "\n";
@@ -47,7 +47,7 @@ namespace TEST_SettingsLib
     {
       AppSettings.InitInstance( settingsFile ,@"\Instance Test\");
 
-      AppSettings.Instance.ReLoad( );
+      //AppSettings.Instance.ReLoad( );
       RTB.Text = AppSettings.Instance.FormLocation.ToString( ) + "\n";
       RTB.Text += AppSettings.Instance.IntSetting.ToString( ) + "\n";
       RTB.Text += AppSettings.Instance.FloatSetting.ToString( ) + "\n";
