@@ -13,7 +13,7 @@ namespace SettingsLib
   {
     
     /// <summary>
-    /// Initializes an instance of the System.Configuration.DefaultSettingValueAttribute class.
+    /// Initializes an instance of the DefaultSettingValueAttribute class.
     /// </summary>
     /// <param name="value">A System.String that represents the default value for the property.</param>
     public DefaultSettingValueAttribute( string value )
