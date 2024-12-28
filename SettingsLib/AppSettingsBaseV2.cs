@@ -1,10 +1,8 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Linq;
 using System.IO;
 using System.Reflection;
 using System.ComponentModel;
-using System.Text.RegularExpressions;
 
 namespace SettingsLib
 {
